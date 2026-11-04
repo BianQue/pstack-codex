@@ -1,0 +1,32 @@
+name: Codex compatibility
+
+on:
+  push:
+    branches: [codex, "automation/**"]
+  pull_request:
+    branches: [codex]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  codex:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node scripts/generate-pstack-harness-trees.mjs --check
+      - run: node scripts/check-codex.mjs
+      - run: node --test scripts/check-codex.test.mjs harness/pstack/codex/skills/arena/scripts/codex-arena.test.mjs
+      - name: Check whether this package has current real-model acceptance
+        continue-on-error: true
+        run: node scripts/check-codex.mjs --release

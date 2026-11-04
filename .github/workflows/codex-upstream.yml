@@ -1,0 +1,69 @@
+name: Detect pstack upstream updates
+
+on:
+  schedule:
+    - cron: "23 2 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+concurrency:
+  group: codex-upstream
+  cancel-in-progress: false
+
+jobs:
+  propose:
+    if: github.repository == 'BianQue/pstack-codex'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Propose an upstream merge without publishing
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git remote add upstream https://github.com/cursor/plugins.git
+          git fetch upstream main
+          old=$(node -p "require('./codex/upstream.json').sha")
+          new=$(git rev-parse upstream/main)
+          if [ "$old" = "$new" ]; then
+            echo "Already tracking $new"
+            exit 0
+          fi
+          existing=$(gh pr list --base codex --json headRefName --jq '[.[] | select(.headRefName | startswith("automation/pstack-upstream-"))] | length')
+          if [ "$existing" != 0 ]; then
+            echo "An upgrade PR already exists; retain its review and checks."
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          branch="automation/pstack-upstream-${new:0:12}-$(date -u +%Y%m%d%H%M%S)"
+          git switch -c "$branch"
+          git merge --no-edit upstream/main
+          UPSTREAM_SHA="$new" node --input-type=module -e '
+            import fs from "node:fs";
+            const pstack = JSON.parse(fs.readFileSync("pstack/plugin.json"));
+            fs.writeFileSync("codex/upstream.json", JSON.stringify({
+              repository: "cursor/plugins", sha: process.env.UPSTREAM_SHA, pstackVersion: pstack.version
+            }, null, 2) + "\n");
+          '
+          if ! node scripts/generate-pstack-harness-trees.mjs; then
+            echo "::warning::Generation requires manual repair; the PR must stay blocked."
+          fi
+          git add codex/upstream.json harness/pstack .agents/plugins/marketplace.json
+          git diff --cached --quiet || git commit -m "Track upstream pstack at $new"
+          git push origin "HEAD:$branch"
+          printf 'Tracks cursor/plugins at `%s`.\n\nReview upstream changes, repair generation if needed, and run the Codex CI. Bump the downstream version and rerun local real-model acceptance before release. This workflow never merges or publishes.\n' "$new" > "$RUNNER_TEMP/upstream-pr.md"
+          gh pr create --base codex --head "$branch" \
+            --title "Update pstack upstream to ${new:0:12}" --body-file "$RUNNER_TEMP/upstream-pr.md"
+          gh workflow run codex-ci.yml --ref "$branch"

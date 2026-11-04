@@ -1,0 +1,12 @@
+{
+  "name": "pstack-codex",
+  "version": "0.1.0",
+  "description": "Independent Codex CLI candidates for pstack arena, with verified delivery receipts.",
+  "author": {
+    "name": "Lauren Tan and BianQue"
+  },
+  "repository": "https://github.com/BianQue/pstack-codex",
+  "homepage": "https://github.com/BianQue/pstack-codex/blob/codex/CODEX.md",
+  "license": "MIT",
+  "skills": "./skills/"
+}

@@ -1,0 +1,59 @@
+name: Release accepted Codex package
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: codex-release
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/codex' && github.repository == 'BianQue/pstack-codex'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node scripts/generate-pstack-harness-trees.mjs --check
+      - run: node --test scripts/check-codex.test.mjs harness/pstack/codex/skills/arena/scripts/codex-arena.test.mjs
+      - run: node scripts/check-codex.mjs --release
+  publish:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Publish immutable tag and verified package
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/check-codex.mjs --release
+          version=$(node -p "require('./harness/pstack/codex/plugin.json').version")
+          tag="codex-v$version"
+          target=$(git rev-parse HEAD)
+          mkdir release
+          git archive --format=zip --prefix=pstack-codex/ \
+            -o "release/pstack-codex-$version.zip" HEAD:harness/pstack/codex
+          (cd release && sha256sum "pstack-codex-$version.zip" > SHA256SUMS)
+          cp codex/acceptance.json release/acceptance.json
+          printf 'Codex arena package %s. See CODEX.md at this tag for installation and rollback. The accepted model settings are gpt-6.1-sol / xhigh; backend identity is not independently attested.\n' "$version" > release/notes.md
+          gh release create "$tag" --target "$target" --title "pstack for Codex $version" \
+            --notes-file release/notes.md \
+            "release/pstack-codex-$version.zip" release/SHA256SUMS release/acceptance.json

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { dirname, join, posix, relative } from "node:path";
+import { dirname, join, posix, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -15,12 +15,17 @@ const GUIDE = "docs/guide";
 const MANIFESTS = ["plugin.json", ".claude-plugin/plugin.json"];
 const COMMAND = "node scripts/generate-pstack-harness-trees.mjs";
 const GITHUB = "https://github.com/cursor/plugins";
+const CODEX = join(ROOT, "harness-overrides", "pstack", "codex");
+const portable = (from, path) => relative(from, path).split(sep).join("/");
 const LINK = /\]\(([^)\s]+)\)/g;
 const README = `# pstack harness tree
 
 This folder is generated from \`pstack/skills\`, \`pstack/agents\`, \`pstack/${GUIDE}\`, \`pstack/${ADAPTER}\`, \`pstack/README.md\`, \`pstack/LICENSE\`, and \`pstack/plugin.json\`. Do not edit it by hand.
 
 Cursor uses \`pstack/\` directly, and Claude Code installs \`${TREE}/\`. The tree leaves out the rest of \`pstack/\`, such as \`pstack/automations\` and \`pstack/assets\`. A relative link to a pstack file that the tree leaves out points at that file on GitHub \`main\` instead.
+
+Codex installs \`codex/\`, generated from \`harness-overrides/pstack/codex/\`
+and the shared pstack license. Only arena is supported on Codex.
 
 After editing those sources, run \`${COMMAND}\` from the repository root and commit the result.
 `;
@@ -124,7 +129,7 @@ function render() {
     join(PSTACK, ADAPTER),
     join(PSTACK, "README.md"),
   ];
-  const files = new Map(copies.map((path) => [relative(PSTACK, path), file(path)]));
+  const files = new Map(copies.map((path) => [portable(PSTACK, path), file(path)]));
   const line =
     `In Claude Code, read [the Claude Code adapter](../../${ADAPTER}) once per session before you follow this skill. ` +
     "It maps the Cursor names in pstack skills to Claude Code.";
@@ -164,11 +169,33 @@ for (const [path, entry] of files) {
 for (const link of dangling) console.log(`FAIL ${link}`);
 if (dangling.length > 0) process.exit(1);
 
+// Codex currently ships only arena; other skills keep their existing host contracts.
+for (const path of walk(CODEX)) rendered.set(`codex/${portable(CODEX, path)}`, file(path));
+rendered.set("codex/LICENSE", file(join(PSTACK, "LICENSE")));
+const codexManifest = JSON.parse(readFileSync(join(CODEX, "plugin.json"), "utf8"));
+const { $schema, ...compatManifest } = codexManifest;
+rendered.set("codex/.codex-plugin/plugin.json", {
+  bytes: Buffer.from(`${JSON.stringify({ ...compatManifest, skills: "./skills/" }, null, 2)}\n`),
+  executable: false,
+});
+const marketplacePath = join(ROOT, ".agents", "plugins", "marketplace.json");
+const marketplace = readFileSync(join(ROOT, "codex", "marketplace.json"));
 if (process.argv.includes("--check")) {
-  const onDisk = new Map(existsSync(OUT) ? walk(OUT).map((path) => [relative(OUT, path), file(path)]) : []);
+  if (!existsSync(marketplacePath) || !readFileSync(marketplacePath).equals(marketplace)) {
+    console.error("Codex marketplace is out of date. Run " + COMMAND);
+    process.exit(1);
+  }
+} else {
+  mkdirSync(dirname(marketplacePath), { recursive: true });
+  writeFileSync(marketplacePath, marketplace);
+}
+
+if (process.argv.includes("--check")) {
+  const onDisk = new Map(existsSync(OUT) ? walk(OUT).map((path) => [portable(OUT, path), file(path)]) : []);
   const drifted = [...new Set([...rendered.keys(), ...onDisk.keys()])].sort().filter((path) => {
     const [want, have] = [rendered.get(path), onDisk.get(path)];
-    return !want || !have || !want.bytes.equals(have.bytes) || want.executable !== have.executable;
+    return !want || !have || !want.bytes.equals(have.bytes)
+      || (process.platform !== "win32" && want.executable !== have.executable);
   });
   for (const path of drifted.slice(0, 20)) console.log(`harness/pstack/${path}`);
   if (drifted.length > 0) {

@@ -1,5 +1,8 @@
 # Cursor plugins
 
+This fork maintains pstack for Codex. See [CODEX.md](CODEX.md) for the supported
+arena package, installation, verification, upstream upgrades and rollback.
+
 Official Cursor plugins for popular developer tools, frameworks, and SaaS products. Each plugin is a standalone directory at the repository root with its own `.cursor-plugin/plugin.json` manifest.
 
 ## Plugins
