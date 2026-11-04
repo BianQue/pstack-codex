@@ -3,9 +3,11 @@ name: arena
 description: "Run independent Codex candidates on one task, score every result, pick a base, graft useful differences and verify. Use when the user requests arena or competing candidate implementations."
 ---
 
+In Codex, read [the Codex adapter](../../docs/harness/codex.md) once per session before following this skill. Its tool, model, path and permission mappings take precedence over the upstream host examples below.
+
 # Arena
 
-Read [the Codex adapter](../../docs/harness/codex.md) before launching candidates.
+Read [the arena runner adapter](../../docs/harness/codex-arena.md) before launching candidates.
 It defines the executable, model settings, receipt validation and cancellation
 contract. Track Frame, Fan out, Cross-judge, Pick, Graft and Verify explicitly.
 

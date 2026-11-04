@@ -57,11 +57,20 @@ for (const candidate of result.candidates) {
 }
 assert.equal(fingerprint(), digest, "Package changed during acceptance");
 assert.equal(fingerprint(installedDir), digest, "Installed package changed during acceptance");
+await run(process.execPath, [path.join(root, "scripts/test-codex.mjs"), installedDir]);
+const coverage = json(path.join(installedDir, "coverage.json"));
 const evidence = {
   version: manifest.version, pluginSha256: digest, completedAt: new Date().toISOString(),
   platform: process.platform, node: process.version, requestedModel: result.requested_model,
   requestedReasoningEffort: result.requested_reasoning_effort, modelIdentityVerified: false,
   taskSha256: result.task_sha256, candidates,
+  suite: {
+    deterministicTestsPassed: true,
+    skills: coverage.upstreamSkills.length, playbooks: coverage.playbooks.length,
+    dormantAutomationSkills: coverage.dormantAutomationSkills.length,
+    sourceFiles: coverage.sourceFiles.length,
+    externalIntegrationsExecuted: false,
+  },
 };
 validateAcceptance(evidence, manifest.version, digest);
 fs.writeFileSync(path.join(root, "codex/acceptance.json"), JSON.stringify(evidence, null, 2) + "\n");

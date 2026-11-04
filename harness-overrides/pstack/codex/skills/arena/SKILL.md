@@ -5,7 +5,7 @@ description: "Run independent Codex candidates on one task, score every result, 
 
 # Arena
 
-Read [the Codex adapter](../../docs/harness/codex.md) before launching candidates.
+Read [the arena runner adapter](../../docs/harness/codex-arena.md) before launching candidates.
 It defines the executable, model settings, receipt validation and cancellation
 contract. Track Frame, Fan out, Cross-judge, Pick, Graft and Verify explicitly.
 

@@ -3,6 +3,7 @@
 import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, posix, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { renderCodex } from "./codex-package.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PSTACK = join(ROOT, "pstack");
@@ -24,8 +25,9 @@ This folder is generated from \`pstack/skills\`, \`pstack/agents\`, \`pstack/${G
 
 Cursor uses \`pstack/\` directly, and Claude Code installs \`${TREE}/\`. The tree leaves out the rest of \`pstack/\`, such as \`pstack/automations\` and \`pstack/assets\`. A relative link to a pstack file that the tree leaves out points at that file on GitHub \`main\` instead.
 
-Codex installs \`codex/\`, generated from \`harness-overrides/pstack/codex/\`
-and the shared pstack license. Only arena is supported on Codex.
+Codex installs \`codex/\`, generated from the complete \`pstack/\` source
+and \`harness-overrides/pstack/codex/\`. All published pstack skills and resources
+are included; \`codex/coverage.json\` records the source inventory.
 
 After editing those sources, run \`${COMMAND}\` from the repository root and commit the result.
 `;
@@ -169,15 +171,7 @@ for (const [path, entry] of files) {
 for (const link of dangling) console.log(`FAIL ${link}`);
 if (dangling.length > 0) process.exit(1);
 
-// Codex currently ships only arena; other skills keep their existing host contracts.
-for (const path of walk(CODEX)) rendered.set(`codex/${portable(CODEX, path)}`, file(path));
-rendered.set("codex/LICENSE", file(join(PSTACK, "LICENSE")));
-const codexManifest = JSON.parse(readFileSync(join(CODEX, "plugin.json"), "utf8"));
-const { $schema, ...compatManifest } = codexManifest;
-rendered.set("codex/.codex-plugin/plugin.json", {
-  bytes: Buffer.from(`${JSON.stringify({ ...compatManifest, skills: "./skills/" }, null, 2)}\n`),
-  executable: false,
-});
+for (const [path, entry] of renderCodex(PSTACK, CODEX)) rendered.set(`codex/${path}`, entry);
 const marketplacePath = join(ROOT, ".agents", "plugins", "marketplace.json");
 const marketplace = readFileSync(join(ROOT, "codex", "marketplace.json"));
 if (process.argv.includes("--check")) {

@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "pstack-codex",
-  "version": "0.1.0",
-  "description": "Independent Codex CLI candidates for pstack arena, with verified delivery receipts.",
+  "version": "0.2.0",
+  "description": "The complete upstream pstack skill suite for Codex, with host adapters and verified independent CLI workers.",
   "author": { "name": "Lauren Tan and BianQue" },
   "repository": "https://github.com/BianQue/pstack-codex",
   "homepage": "https://github.com/BianQue/pstack-codex/blob/codex/CODEX.md",
