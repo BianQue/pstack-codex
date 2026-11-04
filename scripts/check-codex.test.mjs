@@ -95,7 +95,7 @@ test("release acceptance rejects missing checks, stale bytes and wrong model set
     workflowSmoke: {
       taskSha256: sha256(fs.readFileSync(path.join(root, "codex/suite-smoke-task.md"))),
       receiptVerified: true, configurationVerified: true, artifactsReviewed: true,
-      artifactSha256: Object.fromEntries([".agents/pstack/models.json", "help.md", "integration.md", "recall.md"]
+      artifactSha256: Object.fromEntries(["help.md", "integration.md", "models.proposed.json", "recall.md"]
         .map(name => [name, "a".repeat(64)])),
     },
   };

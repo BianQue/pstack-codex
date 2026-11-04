@@ -24,6 +24,13 @@ or unrelated AGENTS.md instructions.
 5. Show the concrete proposed table. Obtain confirmation when the user's setup
    request has not already authorized those choices.
 6. Write valid JSON after preserving unrelated user-owned configuration.
+   Codex may protect an existing `.agents/` file from sandbox writes. If that
+   happens, write the complete merged proposal to `models.proposed.json` in the
+   task's ordinary output directory. Read it back and request the host's normal
+   permission flow to copy it to the exact target. An independent worker returns
+   the proposal for its parent to review and apply. Never change ACLs, relaunch
+   another editor or use another tool to bypass a denied write. State clearly
+   when a proposal is ready but the actual configuration is not yet updated.
    The shape is:
 
 ```json

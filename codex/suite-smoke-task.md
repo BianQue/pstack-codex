@@ -1,7 +1,8 @@
 # Installed pstack suite smoke acceptance
 
-This is an authorized synthetic acceptance task in your current writable project.
-The parent supplies the installed plugin path after this task. Read its shared
+This is an authorized synthetic acceptance task. Your current cwd is for reports.
+The parent supplies a separate target project and installed plugin path after
+this task. Read its shared
 Codex adapter first. Do not modify the installed package or a source repository.
 
 Read the installed setup-pstack, poteto-help, recall and make-bot-ui SKILL.md files
@@ -11,14 +12,17 @@ services, send messages, deploy, make remote writes or change global settings.
 
 Perform these four bounded synthetic tasks:
 
-1. Create this project's `.agents/pstack/models.json` with an unrelated
-   `"acceptanceSentinel": "preserve-me"` property. Then run setup-pstack here.
+1. Run setup-pstack for the target project. The parent prepared its protected
+   `.agents/pstack/models.json` with an unrelated
+   `"acceptanceSentinel": "preserve-me"` property.
    I authorize the large budget and all 17 documented roles using gpt-6.1-sol
    with xhigh reasoning effort. For arena runners, architect runners and
    interrogate reviewers use two seats. Use one seat for each other role.
    Leave the arena cross-judge pool empty. Preserve the sentinel property.
    This model and effort have completed real CLI requests in the parent session.
-   Write and re-read the actual project `.agents/pstack/models.json`.
+   Produce and re-read `models.proposed.json` in your own cwd as the complete merged proposal.
+   The parent will review and apply it using the host's permission flow.
+   Do not attempt to write the protected target or bypass its permissions.
 2. Answer this help-only question in help.md: "Which pstack skill should I use to
    understand how an unfamiliar codebase works, and how do I start it in Codex?"
    Include installed file references. Do not start the investigation.
@@ -33,4 +37,4 @@ Perform these four bounded synthetic tasks:
    timer equivalence, deployment or successful Slack action.
 
 Return all four nonempty paths as receipt artifacts:
-.agents/pstack/models.json, help.md, recall.md, integration.md.
+models.proposed.json, help.md, recall.md, integration.md.

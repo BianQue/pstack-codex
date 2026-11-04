@@ -98,6 +98,12 @@ The statechart TypeScript entry can be run directly with Node.js 24, avoiding
 its POSIX launcher. Do not feed Bash syntax to PowerShell or mix the two shells
 for recursive file deletion. A failed toolchain launch is not a successful check.
 
+The host may protect existing `.agents/`, `.codex/` and instruction files even
+inside the project. A denied write requires the host's actual permission flow.
+Return a complete merged proposal in an ordinary writable output path for the
+parent to review and apply when a worker cannot request that permission. Do not
+change ACLs or relaunch another editor/tool to bypass the protected boundary.
+
 ## Conditional Capabilities
 
 All 58 upstream skills are installed. Some workflows need additional tools or

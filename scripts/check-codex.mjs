@@ -54,7 +54,7 @@ export function validateAcceptance(evidence, version, digest) {
   for (const key of ["receiptVerified", "configurationVerified", "artifactsReviewed"])
     assert.equal(evidence.workflowSmoke[key], true);
   assert.deepEqual(Object.keys(evidence.workflowSmoke.artifactSha256).sort(),
-    [".agents/pstack/models.json", "help.md", "integration.md", "recall.md"]);
+    ["help.md", "integration.md", "models.proposed.json", "recall.md"]);
   for (const hash of Object.values(evidence.workflowSmoke.artifactSha256))
     assert.match(hash, /^[a-f0-9]{64}$/);
 }

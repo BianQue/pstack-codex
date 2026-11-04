@@ -33,8 +33,12 @@ if (!verify) {
   }, null, 2));
   await run(process.execPath, [path.join(installedDir, "skills/arena/scripts/codex-arena.mjs"), specFile]);
   const smokeTask = path.join(evidenceDir, "suite-task.md");
+  const smokeProject = path.join(evidenceDir, "project");
+  fs.mkdirSync(path.join(smokeProject, ".agents/pstack"), { recursive: true });
+  fs.writeFileSync(path.join(smokeProject, ".agents/pstack/models.json"),
+    JSON.stringify({ acceptanceSentinel: "preserve-me" }, null, 2) + "\n");
   fs.writeFileSync(smokeTask, fs.readFileSync(path.join(root, "codex/suite-smoke-task.md"), "utf8") +
-    `\nInstalled plugin: ${installedDir}\n`);
+    `\nInstalled plugin: ${installedDir}\nTarget project: ${smokeProject}\n`);
   const smokeSpec = path.join(evidenceDir, "suite-spec.json");
   fs.writeFileSync(smokeSpec, JSON.stringify({
     taskFile: smokeTask, runDir: path.join(evidenceDir, "suite-run"),
@@ -73,9 +77,11 @@ assert.equal(smoke.requested_reasoning_effort, "xhigh");
 assert.equal(smokeCandidate.status, "passed", smokeCandidate.error);
 assert.equal(smokeCandidate.exit_code, 0);
 const smokeDir = path.join(evidenceDir, "suite-run/suite");
-const smokeArtifacts = [".agents/pstack/models.json", "help.md", "integration.md", "recall.md"];
+const smokeArtifacts = ["help.md", "integration.md", "models.proposed.json", "recall.md"];
 assert.deepEqual(smokeCandidate.receipt.artifact_paths.slice().sort(), smokeArtifacts);
-const settings = json(path.join(smokeDir, ".agents/pstack/models.json"));
+const settings = json(path.join(smokeDir, "models.proposed.json"));
+assert.deepEqual(json(path.join(evidenceDir, "project/.agents/pstack/models.json")), settings,
+  "Parent must review and apply the model proposal through the permission flow before verification");
 assert.equal(settings.acceptanceSentinel, "preserve-me");
 assert.equal(settings.budget, "large");
 assert.equal(Object.keys(settings.roles).length, 17);

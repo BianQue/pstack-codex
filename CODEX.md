@@ -98,7 +98,10 @@ node scripts/check-codex.mjs --release
 ```
 
 The smoke worker follows the installed setup, help, recall and webhook skills
-using a synthetic project. Its configuration preserves an unrelated property,
+using a synthetic project. Review `models.proposed.json`, then apply it to
+`project/.agents/pstack/models.json` with the host's permission flow before
+verification. Protected configuration stays outside the worker's writable cwd.
+Its configuration preserves an unrelated property,
 sets all 17 model roles and explicitly leaves cross-family judging disabled.
 No external services, real-session mining or global settings are modified.
 
