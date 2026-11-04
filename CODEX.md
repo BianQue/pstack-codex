@@ -47,7 +47,7 @@ The tests include identity and task-byte checks, concurrency, failed receipts,
 path traversal, symlink/hardlink escapes, metadata masquerading, timeout,
 cancellation and owned process-tree cleanup. Linux also exercises signals.
 The generated Claude Code package must remain unchanged unless upstream
-changes it. Use LF checkouts when running generation on Windows.
+changes it. Repository attributes enforce LF checkouts on Windows and Linux.
 
 The weekly upstream workflow opens an upgrade PR, keeping an existing review
 intact. It never merges or releases. Enable Actions and the repository setting

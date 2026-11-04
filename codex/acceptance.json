@@ -1,0 +1,33 @@
+{
+  "version": "0.1.0",
+  "pluginSha256": "2635339a5dfebdaa023e32db97a6a1cf53882fb64e0f025d882de7a583739443",
+  "completedAt": "2026-11-04T06:17:27.587Z",
+  "platform": "win32",
+  "node": "v24.18.0",
+  "requestedModel": "gpt-6.1-sol",
+  "requestedReasoningEffort": "xhigh",
+  "modelIdentityVerified": false,
+  "taskSha256": "a6c94441312a423c82d6f075c21ce10506f348f7c47284688297f35039011ade",
+  "candidates": [
+    {
+      "id": "a",
+      "receiptVerified": true,
+      "testsPassed": true,
+      "independentBehaviorPassed": true,
+      "artifactSha256": {
+        "selection.mjs": "ee710caafaa85416ebeb4eb7988255209178cbb060ba52e882c3e4051a652256",
+        "selection.test.mjs": "fd564872ee4242a831ce80bc493cfdb72df204dba3f91da38963df5fd9575b80"
+      }
+    },
+    {
+      "id": "b",
+      "receiptVerified": true,
+      "testsPassed": true,
+      "independentBehaviorPassed": true,
+      "artifactSha256": {
+        "selection.mjs": "841097c02e6e316cdfadb3888a1e6d0219674aa80ce7ea723d706ce49fd39bd2",
+        "selection.test.mjs": "fbcaa12e5a440412fbee2fc0dcbd84ded908e4900c1d7407f86e2937d0ba618c"
+      }
+    }
+  ]
+}
