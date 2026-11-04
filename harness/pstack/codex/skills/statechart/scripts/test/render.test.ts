@@ -25,8 +25,9 @@ const cache = path.join(
 const install = (name: string, ...packages: string[]) => {
   const dir = path.join(cache, name);
   execFileSync(
-    "npm",
-    ["install", "--prefix", dir, "--no-audit", "--no-fund", "--save-exact", ...packages],
+    process.platform === "win32" ? process.execPath : "npm",
+    [...(process.platform === "win32" ? [path.join(path.dirname(process.execPath), "node_modules/npm/bin/npm-cli.js")] : []),
+      "install", "--prefix", dir, "--no-audit", "--no-fund", "--save-exact", ...packages],
     { stdio: ["ignore", "pipe", "pipe"] },
   );
   return createRequire(path.join(dir, "package.json"));

@@ -11,7 +11,8 @@ checkPackage(target);
 assert.equal(fingerprint(target), fingerprint(), "Installed package differs from generated package");
 const run = (command, args) => {
   const result = spawnSync(command, args, { cwd: root, stdio: "inherit", windowsHide: true,
-    env: { ...process.env, PSTACK_CODEX_TEST_PLUGIN_DIR: target } });
+    env: { ...process.env, PSTACK_CODEX_TEST_PLUGIN_DIR: target,
+      XDG_CACHE_HOME: path.join(root, "node_modules/.cache/codex-test") } });
   if (result.error) throw result.error;
   assert.equal(result.status, 0, `${command} ${args.join(" ")} failed`);
 };
@@ -20,10 +21,10 @@ run(process.execPath, ["scripts/check-codex.mjs"]);
 const statechart = path.join(target, "skills/statechart/scripts/test");
 // The upstream CLI suite invokes POSIX shebang fixtures and tests Unix signals.
 // Native Windows entry and real TLC are covered separately below.
-const windowsExcluded = new Set(["cli.test.ts", "corpus.test.ts"]);
+const windowsExcluded = new Set(["cli.test.ts", "corpus.test.ts", "tlc-out.test.ts"]);
 const statechartTests = readdirSync(statechart).filter(file => file.endsWith(".test.ts") &&
   (process.platform !== "win32" || !windowsExcluded.has(file))).map(file => path.join(statechart, file));
-run(process.execPath, ["--disable-warning=ExperimentalWarning", "--test",
+run(process.execPath, ["--disable-warning=ExperimentalWarning", "--test", "--test-concurrency=1",
   "scripts/check-codex.test.mjs", "scripts/statechart-native.test.mjs",
   path.join(target, "skills/arena/scripts/codex-arena.test.mjs"), ...statechartTests]);
 run(process.env.BUN ?? "bun", ["test",

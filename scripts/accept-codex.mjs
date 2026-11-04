@@ -32,7 +32,17 @@ if (!verify) {
     reasoningEffort: "xhigh", timeoutMs: 360000, candidates: ["a", "b"],
   }, null, 2));
   await run(process.execPath, [path.join(installedDir, "skills/arena/scripts/codex-arena.mjs"), specFile]);
-  console.log("Delivery complete. Read both candidate modules and tests, then rerun with --verify.");
+  const smokeTask = path.join(evidenceDir, "suite-task.md");
+  fs.writeFileSync(smokeTask, fs.readFileSync(path.join(root, "codex/suite-smoke-task.md"), "utf8") +
+    `\nInstalled plugin: ${installedDir}\n`);
+  const smokeSpec = path.join(evidenceDir, "suite-spec.json");
+  fs.writeFileSync(smokeSpec, JSON.stringify({
+    taskFile: smokeTask, runDir: path.join(evidenceDir, "suite-run"),
+    codexCommand: [codexBin], model: "gpt-6.1-sol", reasoningEffort: "xhigh",
+    timeoutMs: 600000, candidates: ["suite"],
+  }, null, 2));
+  await run(process.execPath, [path.join(installedDir, "skills/arena/scripts/codex-arena.mjs"), smokeSpec]);
+  console.log("Delivery complete. Read both candidates and all suite smoke artifacts, then rerun with --verify.");
   process.exit(0);
 }
 assert.equal(json(path.join(evidenceDir, "package.json")).pluginSha256, digest,
@@ -55,6 +65,29 @@ for (const candidate of result.candidates) {
       .map(name => [name, sha256(fs.readFileSync(path.join(dir, name)))])),
   });
 }
+const smoke = json(path.join(evidenceDir, "suite-run/result.json"));
+const smokeCandidate = smoke.candidates[0];
+assert.equal(smoke.candidates.length, 1);
+assert.equal(smoke.requested_model, "gpt-6.1-sol");
+assert.equal(smoke.requested_reasoning_effort, "xhigh");
+assert.equal(smokeCandidate.status, "passed", smokeCandidate.error);
+assert.equal(smokeCandidate.exit_code, 0);
+const smokeDir = path.join(evidenceDir, "suite-run/suite");
+const smokeArtifacts = [".agents/pstack/models.json", "help.md", "integration.md", "recall.md"];
+assert.deepEqual(smokeCandidate.receipt.artifact_paths.slice().sort(), smokeArtifacts);
+const settings = json(path.join(smokeDir, ".agents/pstack/models.json"));
+assert.equal(settings.acceptanceSentinel, "preserve-me");
+assert.equal(settings.budget, "large");
+assert.equal(Object.keys(settings.roles).length, 17);
+assert.deepEqual(settings.roles["arena cross-judge pool"], []);
+for (const [role, seats] of Object.entries(settings.roles)) {
+  if (role === "arena cross-judge pool") continue;
+  assert.equal(seats.length, ["arena runners", "architect runners", "interrogate reviewers"].includes(role) ? 2 : 1);
+  for (const seat of seats) assert.deepEqual(seat, { model: "gpt-6.1-sol", reasoningEffort: "xhigh" });
+}
+for (const name of ["help.md", "recall.md", "integration.md"]) {
+  assert(fs.readFileSync(path.join(smokeDir, name), "utf8").trim().length > 100, `Empty smoke result: ${name}`);
+}
 assert.equal(fingerprint(), digest, "Package changed during acceptance");
 assert.equal(fingerprint(installedDir), digest, "Installed package changed during acceptance");
 await run(process.execPath, [path.join(root, "scripts/test-codex.mjs"), installedDir]);
@@ -70,6 +103,12 @@ const evidence = {
     dormantAutomationSkills: coverage.dormantAutomationSkills.length,
     sourceFiles: coverage.sourceFiles.length,
     externalIntegrationsExecuted: false,
+  },
+  workflowSmoke: {
+    taskSha256: sha256(fs.readFileSync(path.join(root, "codex/suite-smoke-task.md"))),
+    receiptVerified: true, configurationVerified: true, artifactsReviewed: true,
+    artifactSha256: Object.fromEntries(smokeArtifacts.map(name =>
+      [name, sha256(fs.readFileSync(path.join(smokeDir, name)))])),
   },
 };
 validateAcceptance(evidence, manifest.version, digest);

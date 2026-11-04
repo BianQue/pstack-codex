@@ -16,7 +16,7 @@ export function* readMessages(tlcOut: string | Iterable<string>): Generator<Part
   const open: Message[] = [];
   try {
     for (let next = lines.next(); !next.done;) {
-      const line = next.value;
+      const line = next.value.replace(/\r$/, "");
       next = lines.next();
       if (next.done && (!line || isCutMarker(line))) break;
       const start = START.exec(line);

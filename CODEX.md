@@ -63,10 +63,12 @@ cancellation and owned process-tree cleanup. Linux also exercises signals.
 The full gate also runs the installed PR watcher, plan checker, statechart
 property tests and real Java/TLC comparisons. CI uses Node 24, Bun 1.3.11,
 Java 21 and TLC 1.7.4, verified against upstream's SHA256.
-Linux runs all upstream script suites. Windows excludes upstream's POSIX CLI
-fixtures and one fake `gh` shell-program test; it runs the portable suites plus
+Linux runs all upstream script suites. Windows excludes upstream's `cli`,
+`corpus` and `tlc-out` suites that execute POSIX fixtures, plus one fake `gh`
+shell-program test; it runs the portable suites plus
 native statechart tests with real TLC, normal-exit cleanup and output collision
-protection. The Codex override fixes statechart's Windows worker cleanup.
+protection. Codex overrides fix Windows worker cleanup, CRLF message parsing
+and the Windows npm entry used by upstream's render tests.
 
 The generated Claude Code package must remain unchanged unless upstream
 changes it. Repository attributes enforce LF checkouts on Windows and Linux.
@@ -80,18 +82,25 @@ manual repair. Failed generation remains visible as a failing PR check.
 
 Before each release, bump the version in the override manifest, regenerate,
 and test a fresh marketplace installation in a separate Codex home.
-Run the installed runner using two independent synthetic-task candidates:
+Run the installed runner using two independent synthetic-task candidates and
+one bounded suite smoke worker:
 
 ```powershell
 node scripts/accept-codex.mjs C:/path/to/native/codex.exe C:/path/to/new-evidence-directory C:/path/to/installed/pstack-codex
 ```
 
-Read both candidates' modules and tests in the evidence directory, then run:
+Read both candidates' modules/tests and the four `suite-run/suite` smoke
+artifacts in the evidence directory, then run:
 
 ```powershell
 node scripts/accept-codex.mjs C:/path/to/native/codex.exe C:/path/to/evidence-directory C:/path/to/installed/pstack-codex --verify
 node scripts/check-codex.mjs --release
 ```
+
+The smoke worker follows the installed setup, help, recall and webhook skills
+using a synthetic project. Its configuration preserves an unrelated property,
+sets all 17 model roles and explicitly leaves cross-family judging disabled.
+No external services, real-session mining or global settings are modified.
 
 The verify phase reruns candidate tests, independent behavior assertions and the
 full deterministic gate against the installed package, then writes only a

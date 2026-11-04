@@ -49,6 +49,14 @@ export function validateAcceptance(evidence, version, digest) {
     sourceFiles: coverage.sourceFiles.length,
     externalIntegrationsExecuted: false,
   }, "Full-suite acceptance is missing or stale");
+  assert.equal(evidence.workflowSmoke.taskSha256,
+    sha256(fs.readFileSync(path.join(root, "codex/suite-smoke-task.md"))));
+  for (const key of ["receiptVerified", "configurationVerified", "artifactsReviewed"])
+    assert.equal(evidence.workflowSmoke[key], true);
+  assert.deepEqual(Object.keys(evidence.workflowSmoke.artifactSha256).sort(),
+    [".agents/pstack/models.json", "help.md", "integration.md", "recall.md"]);
+  for (const hash of Object.values(evidence.workflowSmoke.artifactSha256))
+    assert.match(hash, /^[a-f0-9]{64}$/);
 }
 export function checkPackage(dir = pluginDir) {
   const manifest = json(path.join(dir, "plugin.json"));

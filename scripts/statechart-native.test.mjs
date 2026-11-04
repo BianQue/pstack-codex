@@ -3,11 +3,20 @@ import { spawnSync } from "node:child_process";
 import * as fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { test } from "node:test";
 import { pluginDir, sha256 } from "./check-codex.mjs";
 
 const scripts = path.join(process.env.PSTACK_CODEX_TEST_PLUGIN_DIR ?? pluginDir, "skills/statechart/scripts");
 const skip = !process.env.TLA2TOOLS && "Full suite requires the pinned TLC jar";
+test("TLC messages have identical meaning with LF, CRLF and streamed CRLF", async () => {
+  const { readMessages } = await import(pathToFileURL(path.join(scripts, "frontends/messages.ts")));
+  const text = "@!@!@STARTMSG 2110:1 @!@!@\nError: Invariant Low is violated.\n@!@!@ENDMSG 2110 @!@!@\n";
+  const expected = [...readMessages(text)];
+  assert.equal(expected[0].code, 2110);
+  assert.deepEqual([...readMessages(text.replaceAll("\n", "\r\n"))], expected);
+  assert.deepEqual([...readMessages(text.replaceAll("\n", "\r\n").split("\n"))], expected);
+});
 for (const [name, status] of [["Login", 0], ["CounterRules", 1]]) {
   test(`native ${process.platform} entry produces the recorded ${name} verdict with real TLC`, { skip }, () => {
     assert.equal(sha256(fs.readFileSync(process.env.TLA2TOOLS)),

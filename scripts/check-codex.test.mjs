@@ -92,6 +92,12 @@ test("release acceptance rejects missing checks, stale bytes and wrong model set
     candidates: [candidate("a"), candidate("b")],
     suite: { deterministicTestsPassed: true, skills: 58, playbooks: 23,
       dormantAutomationSkills: 3, sourceFiles: 573, externalIntegrationsExecuted: false },
+    workflowSmoke: {
+      taskSha256: sha256(fs.readFileSync(path.join(root, "codex/suite-smoke-task.md"))),
+      receiptVerified: true, configurationVerified: true, artifactsReviewed: true,
+      artifactSha256: Object.fromEntries([".agents/pstack/models.json", "help.md", "integration.md", "recall.md"]
+        .map(name => [name, "a".repeat(64)])),
+    },
   };
   validateAcceptance(evidence, "0.1.0", "c".repeat(64));
   for (const change of [
@@ -109,6 +115,8 @@ test("release acceptance rejects missing checks, stale bytes and wrong model set
     e => { delete e.suite; },
     e => { e.suite.skills = 1; },
     e => { e.suite.deterministicTestsPassed = false; },
+    e => { e.workflowSmoke.configurationVerified = false; },
+    e => { e.workflowSmoke.artifactSha256["help.md"] = ""; },
   ]) {
     const invalid = structuredClone(evidence);
     change(invalid);

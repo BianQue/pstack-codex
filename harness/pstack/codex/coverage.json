@@ -1100,7 +1100,7 @@
     {
       "path": "skills/statechart/scripts/frontends/messages.ts",
       "sourceSha256": "36bfc6fb3ffa86897661efb2aa67bd95b55a4da9a3e952831f6e0668826b4b92",
-      "treatment": "copied"
+      "treatment": "override"
     },
     {
       "path": "skills/statechart/scripts/frontends/spec.ts",
@@ -3065,7 +3065,7 @@
     {
       "path": "skills/statechart/scripts/test/render.test.ts",
       "sourceSha256": "9cb369e5f4c464ca540ccc3de4fdd76670b84e54f06955ccb46908826579ac23",
-      "treatment": "copied"
+      "treatment": "override"
     },
     {
       "path": "skills/statechart/scripts/test/tlc-out.test.ts",
