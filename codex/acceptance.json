@@ -1,7 +1,7 @@
 {
-  "version": "0.1.0",
-  "pluginSha256": "2635339a5dfebdaa023e32db97a6a1cf53882fb64e0f025d882de7a583739443",
-  "completedAt": "2026-11-04T06:17:27.587Z",
+  "version": "0.2.0",
+  "pluginSha256": "9565ea5f69c67187d9d22c41c7d32fc4dc00460b065f0473105c60463e4688cc",
+  "completedAt": "2026-11-04T07:48:58.593Z",
   "platform": "win32",
   "node": "v24.18.0",
   "requestedModel": "gpt-6.1-sol",
@@ -16,7 +16,7 @@
       "independentBehaviorPassed": true,
       "artifactSha256": {
         "selection.mjs": "ee710caafaa85416ebeb4eb7988255209178cbb060ba52e882c3e4051a652256",
-        "selection.test.mjs": "fd564872ee4242a831ce80bc493cfdb72df204dba3f91da38963df5fd9575b80"
+        "selection.test.mjs": "f3e539ff3dbc35ab57272f7b008387d7a873f9d9631b10566c7ed3cc76e99732"
       }
     },
     {
@@ -25,9 +25,29 @@
       "testsPassed": true,
       "independentBehaviorPassed": true,
       "artifactSha256": {
-        "selection.mjs": "841097c02e6e316cdfadb3888a1e6d0219674aa80ce7ea723d706ce49fd39bd2",
-        "selection.test.mjs": "fbcaa12e5a440412fbee2fc0dcbd84ded908e4900c1d7407f86e2937d0ba618c"
+        "selection.mjs": "ad64ac44dd27e54609c2f58391ee307c344b6d3586d516140c970bf8bd7d506b",
+        "selection.test.mjs": "82c227b7eaf814e6f710a01ac11b6cf244c80566859afad6e34b46f09ccafb2c"
       }
     }
-  ]
+  ],
+  "suite": {
+    "deterministicTestsPassed": true,
+    "skills": 58,
+    "playbooks": 23,
+    "dormantAutomationSkills": 3,
+    "sourceFiles": 573,
+    "externalIntegrationsExecuted": false
+  },
+  "workflowSmoke": {
+    "taskSha256": "842bcd7d78b09511195d699d350de522cdbde614ec9076f1af7b8f2c2b509d7d",
+    "receiptVerified": true,
+    "configurationVerified": true,
+    "artifactsReviewed": true,
+    "artifactSha256": {
+      "help.md": "daf548d358220cbe18880aa35bbe7a142d8289492b5ca5437fc60b73a74e2065",
+      "integration.md": "dfab07b2b46bbd24ef66bef73039a4d0402086b60afcb18c771cd442b8ede322",
+      "models.proposed.json": "5f2c793d76a0e4eff675b804a90c7ca4fee91a61612acd20d15010afd2e7e17a",
+      "recall.md": "0e7792fd90ee0852d060d91fe7b8857e851ffcdbc20b8bda5085e367abef749d"
+    }
+  }
 }
