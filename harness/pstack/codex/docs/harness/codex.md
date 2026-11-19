@@ -34,6 +34,10 @@ single worker. Put the actual task and required skill/brief paths in a UTF-8 tas
 file. Each worker must read the files rather than infer its task from a name.
 Use an independent cwd per worker and read every returned artifact.
 
+Interrogate alone can opt into [native dispatch](../../skills/interrogate/native.md).
+Follow that routing check before its arena fan-out. Other workflows keep the
+CLI worker path.
+
 | Upstream field | Codex worker mapping |
 | --- | --- |
 | `subagent_type: generalPurpose` | A native CLI worker whose task states its role. No `subagent_type` argument is passed. |

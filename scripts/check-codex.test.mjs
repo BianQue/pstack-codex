@@ -3,7 +3,7 @@ import * as fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { checkPackage, fingerprint, root, sha256, validateAcceptance } from "./check-codex.mjs";
+import { checkPackage, fingerprint, json, pluginDir, root, sha256, validateAcceptance } from "./check-codex.mjs";
 import { adaptSkill, markdownLinks, renderCodex, skillMetadata } from "./codex-package.mjs";
 
 test("generated package has valid manifests, skill metadata and local links", () => {
@@ -81,6 +81,7 @@ test("Markdown examples in fences are not installed dependencies", () => {
   assert.deepEqual(markdownLinks("```\n[example](fake.md)\n```\n[real](real.md)"), ["real.md"]);
 });
 test("release acceptance rejects missing checks, stale bytes and wrong model settings", () => {
+  const coverage = json(path.join(pluginDir, "coverage.json"));
   const candidate = id => ({
     id, receiptVerified: true, testsPassed: true, independentBehaviorPassed: true,
     artifactSha256: { "selection.mjs": "a".repeat(64), "selection.test.mjs": "b".repeat(64) },
@@ -90,8 +91,10 @@ test("release acceptance rejects missing checks, stale bytes and wrong model set
     requestedReasoningEffort: "xhigh", modelIdentityVerified: false,
     taskSha256: sha256(fs.readFileSync(path.join(root, "codex/acceptance-task.md"))),
     candidates: [candidate("a"), candidate("b")],
-    suite: { deterministicTestsPassed: true, skills: 58, playbooks: 23,
-      dormantAutomationSkills: 3, sourceFiles: 573, externalIntegrationsExecuted: false },
+    suite: { deterministicTestsPassed: true,
+      skills: coverage.upstreamSkills.length, playbooks: coverage.playbooks.length,
+      dormantAutomationSkills: coverage.dormantAutomationSkills.length, sourceFiles: coverage.sourceFiles.length,
+      externalIntegrationsExecuted: false },
     workflowSmoke: {
       taskSha256: sha256(fs.readFileSync(path.join(root, "codex/suite-smoke-task.md"))),
       receiptVerified: true, configurationVerified: true, artifactsReviewed: true,
@@ -114,6 +117,7 @@ test("release acceptance rejects missing checks, stale bytes and wrong model set
     e => { e.candidates[0].artifactSha256["selection.mjs"] = ""; },
     e => { delete e.suite; },
     e => { e.suite.skills = 1; },
+    e => { e.suite.sourceFiles--; },
     e => { e.suite.deterministicTestsPassed = false; },
     e => { e.workflowSmoke.configurationVerified = false; },
     e => { e.workflowSmoke.artifactSha256["help.md"] = ""; },
