@@ -63,7 +63,7 @@ jobs:
           git add codex/upstream.json harness/pstack .agents/plugins/marketplace.json
           git diff --cached --quiet || git commit -m "Track upstream pstack at $new"
           git push origin "HEAD:$branch"
-          printf 'Tracks cursor/plugins at `%s`.\n\nReview upstream changes, repair generation if needed, and run the Codex CI. Bump the downstream version and rerun local real-model acceptance before release. This workflow never merges or publishes.\n' "$new" > "$RUNNER_TEMP/upstream-pr.md"
+          printf 'Tracks cursor/plugins at `%s`.\n\nReview `git diff %s %s -- pstack/`. Classify changed behavior as retained, adapted, or unsupported. Repair generation if needed and run Codex CI. Record Desktop and CLI evidence separately using `codex/interrogate-acceptance.md` when dispatch changes. Bump the downstream version and rerun local real-model acceptance before release. This workflow never merges or publishes.\n' "$new" "$old" "$new" > "$RUNNER_TEMP/upstream-pr.md"
           gh pr create --base codex --head "$branch" \
             --title "Update pstack upstream to ${new:0:12}" --body-file "$RUNNER_TEMP/upstream-pr.md"
           gh workflow run codex-ci.yml --ref "$branch"
