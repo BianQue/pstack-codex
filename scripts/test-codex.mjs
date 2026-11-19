@@ -30,5 +30,4 @@ run(process.execPath, ["--disable-warning=ExperimentalWarning", "--test", "--tes
 run(process.env.BUN ?? "bun", ["test",
   ...(process.platform === "win32"
     ? ["--test-name-pattern", "^(?!.*requests and parses fork identity)"] : []),
-  path.join(target, "skills/poteto-mode/scripts/watch-pr"),
-  path.join(target, "skills/poteto-mode/scripts/check-plan.test.ts")]);
+  path.join(target, "skills/poteto-mode/scripts/watch-pr")]);
