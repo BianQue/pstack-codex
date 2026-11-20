@@ -26,6 +26,7 @@ const statechartTests = readdirSync(statechart).filter(file => file.endsWith(".t
   (process.platform !== "win32" || !windowsExcluded.has(file))).map(file => path.join(statechart, file));
 run(process.execPath, ["--disable-warning=ExperimentalWarning", "--test", "--test-concurrency=1",
   "scripts/check-codex.test.mjs", "scripts/statechart-native.test.mjs", "scripts/interrogate-route.test.mjs",
+  "codex/arena-hook-probe.test.mjs",
   path.join(target, "skills/arena/scripts/codex-arena.test.mjs"), ...statechartTests]);
 run(process.env.BUN ?? "bun", ["test",
   ...(process.platform === "win32"

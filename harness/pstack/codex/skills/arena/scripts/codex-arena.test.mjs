@@ -183,6 +183,8 @@ test('two concurrent successes retain exact invocation, identity, logs, and arti
     const nonces = new Set();
     for (const candidate of output.candidates) {
       assert.equal(candidate.status, 'passed', candidate.error);
+      assert.equal(candidate.transport, 'cli');
+      assert.equal(candidate.failure_stage, undefined);
       assert.equal(candidate.exit_code, 0);
       assert(candidate.pid > 0);
       assert.equal(candidate.signal, null);
@@ -214,6 +216,7 @@ test('mixed exit failure preserves the successful candidate and rejects a valid-
     const [a, b] = result(run).candidates;
     assert.equal(a.status, 'passed');
     assert.equal(b.status, 'failed');
+    assert.equal(b.failure_stage, 'execution');
     assert.equal(b.exit_code, 17);
     assert.match(b.error, /code 17/);
     assert.equal(b.receipt, undefined);
@@ -239,6 +242,7 @@ for (const [mode, error] of [
       const [candidate] = result(run).candidates;
       assert.equal(candidate.exit_code, 0);
       assert.equal(candidate.status, 'failed');
+      assert.equal(candidate.failure_stage, 'receipt');
       assert.match(candidate.error, error);
       assert.equal(candidate.receipt, undefined);
     });
