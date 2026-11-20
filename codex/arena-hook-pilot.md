@@ -14,10 +14,12 @@ If no such mapping exists, return no task context, record NO-GO, and keep CLI.
 
 ### Test the host contract without injecting
 
-From this checkout, run `node codex/arena-hook-probe.mjs prepare ABSOLUTE_NEW_DIRECTORY`
-with a new scratch path. Open that directory in the Windows Codex App. Review
-and trust only the project-local diagnostic hooks through the App. Do not copy
-the configuration into the user or system hook directory.
+From this checkout, run `node .codex/hooks/arena-hook-probe.mjs prepare ABSOLUTE_NEW_DIRECTORY`
+with a new scratch path. The command creates the executable probe under
+`ABSOLUTE_NEW_DIRECTORY/.codex/hooks/` and points the project-local
+`.codex/hooks.json` at that relative path. Open that directory in the Windows
+Codex App. Review and trust only the project-local diagnostic hooks through the
+App. Do not copy the configuration into the user or system hook directory.
 
 Spawn two candidates in the scratch directory with `fork_turns: none`. Use only
 `arena-hook-binding-probe` as the spawn message. The hooks write timestamps,
@@ -34,7 +36,7 @@ piped events test the collector only, not the Desktop host.
 1. Use `prepare` with a fresh directory under the project's `.tmp/`. Open
    a new Windows Codex App chat in that project and review its project-local
    Hooks. Do not change global hooks.
-2. Run `node codex/arena-hook-probe.mjs arm ABSOLUTE_PROBE_DIRECTORY PARENT_THREAD_UUID`
+2. Run `node .codex/hooks/arena-hook-probe.mjs arm ABSOLUTE_PROBE_DIRECTORY PARENT_THREAD_UUID`
    using that chat's thread UUID. Do not arm a chat with any other delegated
    work. This authorizes the first `SubagentStart` in that session for ten
    minutes; it does not authorize an Arena candidate.

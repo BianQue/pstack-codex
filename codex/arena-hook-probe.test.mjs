@@ -7,7 +7,8 @@ import { fileURLToPath } from 'node:url';
 
 const session = '0189abcd-0123-4567-89ab-0123456789ab';
 const start = { hook_event_name: 'SubagentStart', session_id: session, agent_id: 'child-thread' };
-const script = fileURLToPath(new URL('./arena-hook-probe.mjs', import.meta.url));
+const hookPath = '.codex/hooks/arena-hook-probe.mjs';
+const script = fileURLToPath(new URL(`../${hookPath}`, import.meta.url));
 
 function setupProbe(t) {
   const parent = path.resolve('.tmp');
@@ -23,7 +24,7 @@ function setupProbe(t) {
   const setup = spawnSync(process.execPath, [script, 'prepare', dir], { encoding: 'utf8' });
   assert.equal(setup.status, 0, setup.stderr);
   const invoke = (input, cwd = dir) => {
-    const result = spawnSync(process.execPath, [path.join(dir, path.basename(script)), 'capture'],
+    const result = spawnSync(process.execPath, [path.join(dir, hookPath), 'capture'],
       { cwd, input: JSON.stringify(input), encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
     return result.stdout;
@@ -38,6 +39,9 @@ test('default probe records metadata only, including when the spawn body is opaq
   const { dir, scratch, invoke, records } = setupProbe(t);
   const config = JSON.parse(readFileSync(path.join(dir, '.codex', 'hooks.json'), 'utf8'));
   assert.deepEqual(Object.keys(config.hooks), ['PreToolUse', 'PostToolUse', 'SubagentStart', 'SubagentStop']);
+  for (const entry of Object.values(config.hooks).flat()) {
+    assert.equal(entry.hooks[0].command, `node ${hookPath} capture`);
+  }
 
   const dispatch = {
     hook_event_name: 'PostToolUse',

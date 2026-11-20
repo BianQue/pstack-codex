@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const script = fileURLToPath(import.meta.url);
+const hookPath = `.codex/hooks/${path.basename(script)}`;
 const marker = 'arena-hook-binding-probe';
 const events = ['PreToolUse', 'PostToolUse', 'SubagentStart', 'SubagentStop'];
 const uuid = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/;
@@ -59,10 +60,10 @@ function writeJson(filename, value) {
 function prepare(dir) {
   if (!dir || !path.isAbsolute(dir)) throw new Error('Specify a new absolute scratch directory.');
   mkdirSync(dir, { mode: 0o700 });
-  mkdirSync(path.join(dir, '.codex'));
+  mkdirSync(path.dirname(path.join(dir, hookPath)), { recursive: true });
   mkdirSync(path.join(dir, 'observations'));
-  copyFileSync(script, path.join(dir, path.basename(script)));
-  const command = `node ./${path.basename(script)} capture`;
+  copyFileSync(script, path.join(dir, hookPath));
+  const command = `node ${hookPath} capture`;
   const hooks = Object.fromEntries(events.map(event => [
     event,
     [{
@@ -78,7 +79,9 @@ function arm(dir, session) {
     throw new Error('Specify the absolute probe directory and its parent Codex thread UUID.');
   }
   const target = realpathSync(dir);
-  if (!lstatSync(path.join(target, path.basename(script))).isFile()
+  const probe = lstatSync(path.join(target, hookPath), { throwIfNoEntry: false })
+    ?? lstatSync(path.join(target, path.basename(script)), { throwIfNoEntry: false });
+  if (!probe?.isFile()
     || !lstatSync(path.join(target, 'observations')).isDirectory()) {
     throw new Error('Prepare the probe directory before arming it.');
   }
@@ -121,7 +124,7 @@ function delivery(dir, event, row) {
 }
 
 function capture() {
-  const dir = path.dirname(realpathSync(script));
+  const dir = path.resolve(path.dirname(realpathSync(script)), '..', '..');
   if (realpathSync(process.cwd()) !== dir) return;
   try {
     const event = JSON.parse(readFileSync(0, 'utf8'));
