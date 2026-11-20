@@ -135,6 +135,7 @@ function prepareCandidate(spec, taskId, taskHash, id) {
     result: {
       candidate_id: id,
       output_dir: outputDir,
+      transport: 'cli',
       command: [spec.codexCommand[0], ...args],
       pid: null,
       exit_code: null,
@@ -218,6 +219,7 @@ async function runCandidate(candidate, timeoutMs, active) {
   let spawnError;
   let stopping;
   let cleanupError;
+  let stage = 'launch';
   const stop = reason => {
     if (closed || stopReason) return;
     stopReason = reason;
@@ -245,6 +247,7 @@ async function runCandidate(candidate, timeoutMs, active) {
       stdio: ['ignore', handles[0], handles[1]],
     });
     result.pid = child.pid ?? null;
+    if (child.pid) stage = 'execution';
     const completion = new Promise(resolve => {
       child.once('error', error => { spawnError = error; });
       child.once('close', (code, signal) => {
@@ -267,6 +270,7 @@ async function runCandidate(candidate, timeoutMs, active) {
       if (spawnError) throw spawnError;
       check(result.exit_code === 0 && !result.signal,
         `Process exited with code ${result.exit_code}, signal ${result.signal}`);
+      stage = 'receipt';
       result.receipt = validateReceipt(candidate);
       result.status = 'passed';
     }
@@ -274,6 +278,7 @@ async function runCandidate(candidate, timeoutMs, active) {
     result.status = 'failed';
     result.error = error.message;
   } finally {
+    if (result.status !== 'passed') result.failure_stage = stage;
     active.delete(stop);
     clearTimeout(timer);
     clearTimeout(retryTimer);
@@ -307,6 +312,7 @@ async function main() {
         if (result.status === 'passed') {
           result.status = 'failed';
           result.error = taskError;
+          result.failure_stage = 'task_integrity';
           delete result.receipt;
         }
       }

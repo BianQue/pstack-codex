@@ -92,6 +92,10 @@ base selection. The runner exits successfully only when all requested
 candidates passed. The main agent may explicitly continue with a documented
 dropout, following the original arena skill.
 
+Each candidate reports `transport: "cli"`. A failed candidate also reports
+`failure_stage`: `launch`, `execution`, `receipt`, or `task_integrity`.
+A process exit is not proof of receipt or task completion.
+
 The timeout applies per candidate. To cancel a running runner, send the line
 `cancel` to its stdin or use its handled SIGINT/SIGTERM path.
 The runner terminates owned process trees and waits for their exit.
